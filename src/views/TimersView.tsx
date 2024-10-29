@@ -16,21 +16,22 @@ const Timers = styled.div`
 `;
 
 const TimerTitle = styled.div`
-  font-size: 2em;
-  font-family: Georgia, serif;
-  color: #23303d;
+  font-size: 1em;
+  font-family: sans-serif;
+  color: white;
   text-align: center;
-  padding: 1rem;
+  padding-top: 2rem;
+  text-transform: uppercase;
+letter-spacing: .2rem;
 `;
 
 const TimerContainer = styled.div`
   display: flex;
   flex-direction: column;
-  text-align: center;
   justify-content: center;
   align-content: space-between;
-  background-color: lightgrey;
-    border-radius: 10px;
+  background-color: ${(props) => (props.isActive ? 'green' : 'maroon' || props.isInitial ? 'grey' : 'black')}; 
+  border-radius: 10px;
 `;
 
 const Timer = styled.div`
@@ -38,47 +39,50 @@ const Timer = styled.div`
   flex-direction: column;
   text-align: center;
   justify-content: center;
-  align-content: space-between;
-  padding: 50px;
-  margin: 10px;
-  font-size: 3rem;
-  width: 15rem;
+  width: 10rem;
   height: 5rem;
-  background-color: #efefef;
+  padding: 60px;
+  margin: 30px;
+  font-size: 2rem;
+  align-content: space-between;
+  background-color: white;
   border-radius: 10px;
-  color: #935430;
-  font-family: "Gill Sans", sans-serif;
-  font-variant: small-caps;
+
 `;
+
+const TimeDisplay = styled.div`
+  border: 2px solid white;
+  color: ${(props) => (props.isActive ? 'black' : 'grey')}; 
+`;
+
+
 
 const Button = styled.button`
 color: white;
-font-size: 1em;
+font-size: 0.75em;
+letter-spacing: .1rem;
 margin: 0.25em;
 padding: 1em 1em;
-border-radius: 100px;
-border: 2px solid white;
+border-radius: 10px;
+border: 2px solid;
+background-color: ${(props) => (props.isActive ? 'maroon' : 'green' )}; 
+text-transform: uppercase;
 `
 const Buttons = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-content: space-between;
-  padding-top: 1rem;
+  padding-bottom: 1rem;
 `
 
 const Input = styled.div`
-  font-size: 1em;
-  font-family: "Gill Sans", sans-serif;
-  color: #23303d;
 `;
 
 const Inputs = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
-  align-content: space-between;
-  gap: 2rem;
 `;
 
 const TimersView = () => {
@@ -94,10 +98,7 @@ const TimersView = () => {
     <Timers>
       {timers.map((timer) => (
         <div key={`timer-${timer.title}`}>
-          <TimerContainer>
-          <TimerTitle>{timer.title}</TimerTitle>
-          <div>{timer.C}</div>
-          </TimerContainer>
+          <TimerContainer> {timer.C} </TimerContainer>
         </div>
       ))}
     </Timers>
@@ -106,4 +107,4 @@ const TimersView = () => {
 };
 
 export default TimersView;
-export {Button, Buttons, Input, Inputs, TimerContainer, Timer};
+export {Button, Buttons, Input, Inputs, TimeDisplay, TimerContainer, Timer, TimerTitle};

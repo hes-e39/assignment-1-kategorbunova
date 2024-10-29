@@ -1,26 +1,24 @@
 import {useState, useEffect, useRef} from 'react'
 import styled from "styled-components";
-import { Buttons, Button, Input, Inputs, TimerContainer, Timer } from '../../views/TimersView';
+import { Buttons, Button, Input, Inputs, TimerContainer, Timer, TimerTitle, TimeDisplay } from '../../views/TimersView';
 
 const STATUS = {
+    INITIAL: 'Initial',
     STARTED: 'Started',
     STOPPED: 'Stopped',
+    FASTFORWARDED: 'Fastforwarded'
   };
 
 function convertToSeconds(timeMinInput: number, timeSecInput: number) {
-    return parseInt(timeMinInput || '0') * 60 + parseInt(timeSecInput || '0');
+    return (Number(timeMinInput || '0') * 60) + Number(timeSecInput || '0');
 }
-
-const TimeDisplay = styled.div`
-  font-size: 2rem;
-  color: ${(props) => (props.isActive ? 'black' : 'grey')}; 
-`;
 
 const Countdown = () => {
 
     const [timeMinInput, setTimeMinInput] = useState('')
     const [timeSecInput, setTimeSecInput] = useState('')
-    const [status, setStatus] = useState(STATUS.STOPPED);
+
+    const [status, setStatus] = useState(STATUS.INITIAL);
     const [secondsRemaining, setSecondsRemaining] = useState(0)
     const intervalRef = useRef(); 
 
@@ -29,40 +27,64 @@ const Countdown = () => {
     const minutesRemaining = (secondsRemaining - secondsOnTimer) / 60
     const minutesOnTimer = minutesRemaining % 60
     const hoursOnTimer = (minutesRemaining - minutesOnTimer) / 60
-  
-    const startCountdown = () => {
-        if (secondsRemaining === 0) {
-            const totalSeconds = convertToSeconds(timeMinInput, timeSecInput);
-            setTimeMinInput('');
-            setTimeSecInput('');
-            if (totalSeconds > 0) {
-              setSecondsRemaining(totalSeconds);
-            } else {
-              alert('Please enter a valid time.');
-              return;
-            }
-          }
-          setStatus(STATUS.STARTED); 
-        };
 
-    const stopCountdown = () => {
-      setStatus(STATUS.STOPPED);
-      clearInterval(intervalRef.current); 
-    }
+    const totalSeconds = convertToSeconds(timeMinInput, timeSecInput);
+
+  
+    const startStopCountdown = () => {
+
+              if (isNaN(totalSeconds) || (timeMinInput === '' && timeSecInput === '') || totalSeconds <= 0) {
+                alert('Please enter a valid time.');
+                }
+              else {
+                if (status !== STATUS.STARTED) {
+                  if (secondsRemaining === 0) {
+                    setSecondsRemaining(totalSeconds);
+                  }
+                  setStatus(STATUS.STARTED);
+                } else {
+                  setStatus(STATUS.STOPPED); 
+                }
+             }
+        }
+        ;
 
     const resetCountdown = () => {
-      stopCountdown();
-      setSecondsRemaining(0);
-      setTimeMinInput('');
-      setTimeSecInput('');
+      setStatus(STATUS.STOPPED);
+      const totalSeconds = convertToSeconds(timeMinInput, timeSecInput);
+      setSecondsRemaining(totalSeconds);
     }
+
+    const fastforwardCountdown = () => {
+        setStatus(STATUS.FASTFORWARDED);
+        setSecondsRemaining(0);
+        clearInterval(intervalRef.current); 
+      }
+
+    const initialCountdown = () => {
+        setStatus(STATUS.INITIAL);
+      }  
+
+    // const clearInput = () => {
+    //     setTimeMinInput(''); // Clear inputs after starting
+    //     setTimeSecInput('');
+    //     setTimeHrInput('');
+    // }
 
     useEffect(() => {
         if (status === STATUS.STARTED) {
+          const totalSeconds = convertToSeconds(timeMinInput, timeSecInput);
+
+          setSecondsRemaining((prev) => {
+            if (prev > 0) return prev - 1;
+            setStatus(STATUS.STOPPED); // Stop if time reaches 0
+            return 0;
+          });
+
           intervalRef.current = setInterval(() => {
-            setSecondsRemaining((prev) => {
+            setSecondsRemaining((prev) => { 
               if (prev > 0) return prev - 1;
-              stopCountdown();
+              startStopCountdown();
               return 0;
             });
           }, 1000);
@@ -71,58 +93,92 @@ const Countdown = () => {
         return () => clearInterval(intervalRef.current); 
       }, [status]);
 
+      //|| status === STATUS.STOPPED && secondsRemaining === 0
+
+
     return (
-        <div className="App">
-            <Inputs>
-            <Input>     
-                <input 
-                    style={{ width: '1rem', padding: '10px' }}
-                    id="timeMinInput" 
-                    value={timeMinInput}
-                    onChange={e=>{
-                        setTimeMinInput(e.target.value);
-                    }}/>
-                <div>min</div>
-            </Input>
-            <Input> 
-                <input 
-                    style={{ width: '1rem', padding: '10px' }}
-                    id="timeInput" 
-                    value={timeSecInput}
-                    onChange={e=>{
-                        setTimeSecInput(e.target.value);
-                    }}/>
-                    <div>sec</div>
-            </Input>
-            </Inputs>
+        <div className="App"> 
+
+            <TimerContainer isActive={status === STATUS.STARTED} isInitial={status === STATUS.INITIAL}>
+            <TimerTitle>Countdown</TimerTitle> 
+              <Timer>
+              {status === STATUS.INITIAL  && (
+              <Inputs>
+              <Input>     
+                  <input 
+                      style={{ width: 'auto', maxWidth: '3rem', border: '2px solid white', fontSize: '2rem', textAlign: 'right' }}
+                      id="timeMinInput" 
+                      placeholder='10'
+                      value={timeMinInput}
+                      onChange={e=>{
+                          setTimeMinInput(e.target.value);
+                      }}
+                      disabled={secondsRemaining > 0}/>
+              </Input>
+              :
+              <Input> 
+                  <input 
+                      style={{ width: 'auto', maxWidth: '3rem', border: '2px solid white', fontSize: '2rem', textAlign: 'left' }}
+                      id="timeInput" 
+                      value={timeSecInput}
+                      placeholder='00'
+                      onChange={e=>{
+                          setTimeSecInput(e.target.value);
+                      }}
+                      disabled={secondsRemaining > 0}/>
+              </Input>
+              </Inputs>
+              )}
+
+              {secondsRemaining !== 0 && status !== STATUS.FASTFORWARDED &&
+              <TimeDisplay isActive={status === STATUS.STARTED}>
+                {hoursOnTimer > 0 && ( <> {String(hoursOnTimer).padStart(2, '0')}:</>)}
+                {minutesOnTimer < 10 ? minutesOnTimer : String(minutesOnTimer)}:
+                  {String(secondsOnTimer).padStart(2, '0')}
+              </TimeDisplay>
+              }
+              
+              {status === STATUS.FASTFORWARDED && 
+              <div style={{fontSize: '1rem',  textTransform: 'uppercase',   letterSpacing: '.2rem'}}>
+              Time's Up! 
+              </div>
+              }
+
+              </Timer>
             <Buttons>
-                <Button 
-                    onClick={startCountdown} 
-                    //type="button" 
-                    style={{backgroundColor: 'darkgreen'}}>
-                    Start
-                </Button>
-                <Button 
-                    onClick={stopCountdown} 
-                    //type="button" 
-                    style={{backgroundColor: 'darkred'}}>
-                    Stop
-                </Button>
+                
+            {status !== STATUS.FASTFORWARDED &&     
+                <Button onClick={startStopCountdown} isActive={status === STATUS.STARTED}>
+                {status === STATUS.STARTED ? 'Stop' : 'Start'}
+                </Button>}
+
+            {status !== STATUS.INITIAL && secondsRemaining !== totalSeconds &&
                 <Button 
                     onClick={resetCountdown} 
-                    //type="button" 
-                    style={{backgroundColor: 'grey'}}>
+                    style={{backgroundColor: 'navy'}}>
                     Reset
-                </Button>
-            </Buttons>
-            <Timer>
-            <TimeDisplay isActive={status === STATUS.STARTED}>
-                {String(hoursOnTimer).padStart(2, '0')}:
-                {String(minutesOnTimer).padStart(2, '0')}:
-                {String(secondsOnTimer).padStart(2, '0')}
-             </TimeDisplay>
+                </Button>}
+
+            {status === STATUS.FASTFORWARDED &&     
+            <Button 
+            onClick={initialCountdown} 
+            style={{backgroundColor: 'steelblue'}}>
+            New Input
+            </Button>
+             }
+
+            {status !== STATUS.INITIAL && status !== STATUS.FASTFORWARDED &&
+            <Button 
+                    onClick={fastforwardCountdown} 
+                    //type="button" 
+                    style={{backgroundColor: 'darkgreen'}}>
+                    Forward
+                </Button>}   
+
             
-            </Timer>
+              
+            </Buttons>
+            </TimerContainer>
         </div>
       )
 };
