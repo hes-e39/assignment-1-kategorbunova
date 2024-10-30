@@ -32,6 +32,7 @@ const TimerContainer = styled.div`
   align-content: space-between;
   background-color: ${(props) => (props.isActive ? 'green' : 'maroon' || props.isInitial ? 'grey' : 'black')}; 
   border-radius: 10px;
+
 `;
 
 const Timer = styled.div`
@@ -43,6 +44,7 @@ const Timer = styled.div`
   height: 5rem;
   padding: 60px;
   margin: 30px;
+  margin-bottom: 15px;
   font-size: 2rem;
   align-content: space-between;
   background-color: white;

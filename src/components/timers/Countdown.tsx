@@ -1,6 +1,7 @@
 import {useState, useEffect, useRef} from 'react'
 import styled from "styled-components";
 import { Buttons, Button, Input, Inputs, TimerContainer, Timer, TimerTitle, TimeDisplay } from '../../views/TimersView';
+import { isInputElement } from 'react-router-dom/dist/dom';
 
 const STATUS = {
     INITIAL: 'Initial',
@@ -144,7 +145,19 @@ const Countdown = () => {
               </div>
               }
 
+              
+
               </Timer>
+              
+              {status !== STATUS.INITIAL &&
+            <div  style={{fontSize: '0.75rem', textAlign: 'center', color: 'darkgrey', padding: '0.5rem'}} >Countdown for: 
+              {totalSeconds > 60 && ( <> {String(timeMinInput).padStart(2, '0')}:</>)}
+              <>{timeSecInput||'00'}</>
+              </div>}
+              
+              
+              
+
             <Buttons>
                 
             {status !== STATUS.FASTFORWARDED &&     
