@@ -28,6 +28,19 @@ const PageIndex = () => {
   );
 };
 
+const TimersPages = () => {
+  return (
+    <ul>
+        <li>
+          <Link to="/">Countdown</Link>
+        </li>
+        <li>
+          <Link to="/docs">Stopwatch</Link>
+        </li>
+      </ul>
+  )
+}
+
 const router = createHashRouter([
   {
     path: "/",

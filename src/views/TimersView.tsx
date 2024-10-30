@@ -40,7 +40,7 @@ const Timer = styled.div`
   flex-direction: column;
   text-align: center;
   justify-content: center;
-  width: 10rem;
+  width: 200px;
   height: 5rem;
   padding: 60px;
   margin: 30px;

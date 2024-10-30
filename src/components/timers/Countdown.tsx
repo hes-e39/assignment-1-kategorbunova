@@ -1,7 +1,5 @@
 import {useState, useEffect, useRef} from 'react'
-import styled from "styled-components";
 import { Buttons, Button, Input, Inputs, TimerContainer, Timer, TimerTitle, TimeDisplay } from '../../views/TimersView';
-import { isInputElement } from 'react-router-dom/dist/dom';
 
 const STATUS = {
     INITIAL: 'Initial',
@@ -39,11 +37,12 @@ const Countdown = () => {
                 }
               else {
                 if (status !== STATUS.STARTED) {
-                  if (secondsRemaining === 0) {
-                    setSecondsRemaining(totalSeconds);
-                  }
+                      if (secondsRemaining === 0) {
+                        setSecondsRemaining(totalSeconds);
+                      }
                   setStatus(STATUS.STARTED);
-                } else {
+                } 
+                else {
                   setStatus(STATUS.STOPPED); 
                 }
              }
@@ -99,7 +98,6 @@ const Countdown = () => {
 
     return (
         <div className="App"> 
-
             <TimerContainer isActive={status === STATUS.STARTED} isInitial={status === STATUS.INITIAL}>
             <TimerTitle>Countdown</TimerTitle> 
               <Timer>
@@ -107,7 +105,7 @@ const Countdown = () => {
               <Inputs>
               <Input>     
                   <input 
-                      style={{ width: 'auto', maxWidth: '3rem', border: '2px solid white', fontSize: '2rem', textAlign: 'right' }}
+                      style={{ maxWidth: '3rem', border: '0px solid white', fontSize: '2rem', textAlign: 'right' }}
                       id="timeMinInput" 
                       placeholder='10'
                       value={timeMinInput}
@@ -116,10 +114,9 @@ const Countdown = () => {
                       }}
                       disabled={secondsRemaining > 0}/>
               </Input>
-              :
-              <Input> 
+              <Input>:
                   <input 
-                      style={{ width: 'auto', maxWidth: '3rem', border: '2px solid white', fontSize: '2rem', textAlign: 'left' }}
+                      style={{ maxWidth: '3rem', border: '0px solid white', fontSize: '2rem', textAlign: 'left' }}
                       id="timeInput" 
                       value={timeSecInput}
                       placeholder='00'
@@ -152,7 +149,7 @@ const Countdown = () => {
               {status !== STATUS.INITIAL &&
             <div  style={{fontSize: '0.75rem', textAlign: 'center', color: 'darkgrey', padding: '0.5rem'}} >Countdown for: 
               {totalSeconds > 60 && ( <> {String(timeMinInput).padStart(2, '0')}:</>)}
-              <>{timeSecInput||'00'}</>
+              {String(timeSecInput).padStart(2, '0')||'00'}
               </div>}
               
               
