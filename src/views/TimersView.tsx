@@ -10,6 +10,7 @@ import Tabata from "../components/timers/Tabata";
 const Timers = styled.div`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   justify-content: center;
   align-content: space-between;
   gap: 2rem;
@@ -61,14 +62,12 @@ const TimeDisplay = styled.div`
 
 const Button = styled.button`
 color: white;
-font-size: 0.75em;
-letter-spacing: .1rem;
 margin: 0.25em;
-padding: 1em 1em;
 border-radius: 10px;
 border: 2px solid;
+width: 70px;
+height: 50px;
 background-color: ${(props) => (props.isActive ? 'maroon' : 'green' )}; 
-text-transform: uppercase;
 `
 const Buttons = styled.div`
   display: flex;

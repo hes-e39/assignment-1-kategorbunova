@@ -69,38 +69,37 @@ const XY = () => {
       }  
 
 
-
-    useEffect(() => {
+      useEffect(() => {
         if (status === STATUS.STARTED) {
           const totalSeconds = convertToSeconds(timeMinInput, timeSecInput);
           setSecondsRemaining(totalSeconds);
-          setRepRemaining(Number(repInput-1));
-
-        intervalRef.current = setInterval(() => {
+          setRepRemaining(Number(repInput));
+      
+          intervalRef.current = setInterval(() => {
             setSecondsRemaining((prevSec) => {
-                if (prevSec > 0) {
-                    return prevSec - 1;
-                }
-                else {                    
-                    setRepRemaining((prevRep) => {
-                    if (prevRep > 0) {
-                        setSecondsRemaining(totalSeconds);
-                        return prevRep - 1;
-                    }
-                    else    
-                        startStopCountdown();
-                        return 0; 
-                    });}    
+              if (prevSec > 1) {
+                return prevSec - 1; 
+              } else {
+                setRepRemaining((prevRep) => {
+                  if (prevRep > 1) {
+                    setSecondsRemaining(totalSeconds);
+                    return prevRep - 1;
+                  } else {
+                    clearInterval(intervalRef.current);
+                    setStatus(STATUS.STOPPED);
                     return 0;
-                
+                  }
+                });
+                return 0;
+              }
             });
-          }, 1000); 
+          }, 1000);
         }
-    
+      
         return () => clearInterval(intervalRef.current); 
       }, [status]);
 
-
+      
 
     return (
         <div className="App"> 
