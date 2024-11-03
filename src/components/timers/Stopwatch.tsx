@@ -1,16 +1,8 @@
 import {useState, useEffect, useRef} from 'react'
-import { Buttons, Button, Input, Inputs, TimerContainer, Timer, TimerTitle, TimeDisplay } from '../../views/TimersView';
+import { Buttons, Button,  Inputs, TimerContainer, Timer, TimerTitle, TimeDisplay, SupportText, Input } from '../../utils/styles';
+import { convertToSeconds, DisplayForText, DisplayForTime } from '../../utils/helpers';
+import { STATUS } from '../../utils/constants';
 
-const STATUS = {
-    INITIAL: 'Initial',
-    STARTED: 'Started',
-    STOPPED: 'Stopped',
-    FASTFORWARDED: 'Fastforwarded'
-  };
-
-function convertToSeconds(timeMinInput: number, timeSecInput: number) {
-    return (Number(timeMinInput || '0') * 60) + Number(timeSecInput || '0');
-}
 
 const Stopwatch = () => {
 
@@ -36,6 +28,9 @@ const Stopwatch = () => {
           if (isNaN(totalSeconds) || (timeMinInput === '' && timeSecInput === '') || totalSeconds <= 0) {
             alert('Please enter a valid time.');
             }
+          else if (totalSeconds > 3600) {
+            alert("Friendly caution: excercise over an hour can lead to overtraining. Please enter a time under an hour.")
+          }
           else {
             if (status !== STATUS.STARTED) 
               {
@@ -65,6 +60,7 @@ const Stopwatch = () => {
     const initialCountdown = () => {
         setStatus(STATUS.INITIAL);
       }  
+
 
 
     useEffect(() => {
@@ -98,9 +94,10 @@ const Stopwatch = () => {
         <div className="App"> 
 
             <TimerContainer isActive={status === STATUS.STARTED} isInitial={status === STATUS.INITIAL}>
-            <TimerTitle>Stopwatch</TimerTitle> 
-              <Timer>
 
+            <TimerTitle>Stopwatch</TimerTitle> 
+
+              <Timer>
               {status === STATUS.INITIAL  && (
               <Inputs>
               <Input>     
@@ -127,45 +124,44 @@ const Stopwatch = () => {
               </Input>
               </Inputs>
               )}
-
             {(status !== STATUS.INITIAL)  && 
               <TimeDisplay isActive={status === STATUS.STARTED}>
-                {hoursOnTimer > 0 && ( <> {String(hoursOnTimer).padStart(2, '0')}:</>)}
-                {minutesOnTimer < 10 ? minutesOnTimer : String(minutesOnTimer)}:
-                  {String(secondsOnTimer).padStart(2, '0')}
+                <DisplayForTime hoursOnTimer={hoursOnTimer} minutesOnTimer={minutesOnTimer} secondsOnTimer= {secondsOnTimer} />
               </TimeDisplay>
               }           
-              
-              
-              {/* {status === STATUS.FASTFORWARDED && 
-              <div style={{fontSize: '1rem',  textTransform: 'uppercase',   letterSpacing: '.2rem'}}>
-              Time's Up! 
-              </div>
-              } */}
-
               </Timer>
-                            
-              {status !== STATUS.INITIAL &&
-            <div  style={{fontSize: '0.75rem', textAlign: 'center', color: 'white', padding: '0.5rem'}} >
-              <>Stopwatch for </>
-              {totalSeconds > 60 && ( <> {String(Number(totalSeconds - (timeSecInput%60))/60)}min </>)}
-              {String(timeSecInput % 60)||'00'}sec
-              </div>}
 
+              {status !== STATUS.INITIAL && (status !== STATUS.FASTFORWARDED) && (secondsPassed !== totalSeconds && status !== STATUS.INITIAL) &&
+                <SupportText>
+                  <>In progress: stopwatch for </> 
+                  <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInput}/>
+                </SupportText>
+              }
+
+              {(status === STATUS.FASTFORWARDED || (secondsPassed === totalSeconds && status !== STATUS.INITIAL)) &&
+              <SupportText>
+                <>Finished: stopwatch for </>
+                <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInput}/>
+              </SupportText>
+              }
+
+              {status === STATUS.INITIAL &&
+              <SupportText>
+                <>Please input time for a stopwatch above</>
+              </SupportText>}
 
 
               <Buttons>
-                
                 {(status !== STATUS.FASTFORWARDED && (secondsPassed !== totalSeconds || status === STATUS.INITIAL)) &&
                     <Button onClick={startStopCountdown} isActive={status === STATUS.STARTED}>
                     {status === STATUS.STARTED ? 'Pause':'Start'}
                     </Button>}
     
-                {status !== STATUS.INITIAL && secondsPassed === totalSeconds &&
+                {status !== STATUS.INITIAL  &&
                     <Button 
                         onClick={resetCountdown} 
                         style={{backgroundColor: 'navy'}}>
-                        Restart
+                        Reset
                     </Button>}
     
                 {(status === STATUS.FASTFORWARDED || (secondsPassed === totalSeconds && status !== STATUS.INITIAL)) &&     
@@ -183,10 +179,6 @@ const Stopwatch = () => {
                         style={{backgroundColor: 'darkgreen'}}>
                         Forward
                     </Button>}   
-
-
-            
-              
             </Buttons>
             </TimerContainer>
         </div>

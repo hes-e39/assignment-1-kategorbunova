@@ -1,16 +1,8 @@
 import {useState, useEffect, useRef} from 'react'
-import { Buttons, Button, Input, Inputs, TimerContainer, Timer, TimerTitle, TimeDisplay } from '../../views/TimersView';
+import { Buttons, Button, Input, Inputs, TimerContainer, Timer, TimerTitle, TimeDisplay, SupportText } from '../../utils/styles';
+import { convertToSeconds, DisplayForText, DisplayForTime } from '../../utils/helpers';
+import { STATUS } from '../../utils/constants';
 
-const STATUS = {
-    INITIAL: 'Initial',
-    STARTED: 'Started',
-    STOPPED: 'Stopped',
-    FASTFORWARDED: 'Fastforwarded'
-  };
-
-function convertToSeconds(timeMinInput: number, timeSecInput: number) {
-    return (Number(timeMinInput || '0') * 60) + Number(timeSecInput || '0');
-}
 
 const Countdown = () => {
 
@@ -34,6 +26,12 @@ const Countdown = () => {
               if (isNaN(totalSeconds) || (timeMinInput === '' && timeSecInput === '') || totalSeconds <= 0) {
                 alert('Please enter a valid time.');
                 }
+
+                else if (totalSeconds > 3600) {
+                  alert("Friendly caution: excercise over an hour can lead to overtraining. Please enter a time under an hour.")
+                }
+
+              
               else {
                 if (status !== STATUS.STARTED) 
                   {
@@ -65,23 +63,13 @@ const Countdown = () => {
         setStatus(STATUS.INITIAL);
       }  
 
-    // const clearInput = () => {
-    //     setTimeMinInput(''); // Clear inputs after starting
-    //     setTimeSecInput('');
-    //     setTimeHrInput('');
-    // }
 
     const intervalRef = useRef(); 
 
 
     useEffect(() => {
-      //console.log('beginEffect', status); 
         if (status === STATUS.STARTED) {
           const totalSeconds = convertToSeconds(timeMinInput, timeSecInput);
-
-          //console.log('loop');
-          //console.log('totalSeconds', totalSeconds);
-          //console.log('secondsRemaining', secondsRemaining);
 
           setSecondsRemaining((prev) => {
             if (prev > 1) 
@@ -93,16 +81,12 @@ const Countdown = () => {
               if (prev > 1) 
                 return prev - 1;
               else {
-                //console.log('else statement, prev:', prev);
-                //console.log('else statement, totalSeconds:', totalSeconds);
-                //console.log('else statement, secondsRemaining', secondsRemaining);
                 setStatus(STATUS.STOPPED);
                 return 0;
               }
             });
           }, 1000);
         }
-        //console.log('return'); 
         return () => clearInterval(intervalRef.current);
         
       }, [status]);
@@ -143,31 +127,32 @@ const Countdown = () => {
 
               {(status !== STATUS.INITIAL)  &&
               <TimeDisplay isActive={status === STATUS.STARTED}>
-                {hoursOnTimer > 0 && ( <> {String(hoursOnTimer).padStart(2, '0')}:</>)}
-                {minutesOnTimer < 10 ? minutesOnTimer : String(minutesOnTimer)}:
-                  {String(secondsOnTimer).padStart(2, '0')}
+                <DisplayForTime hoursOnTimer={hoursOnTimer} minutesOnTimer={minutesOnTimer} secondsOnTimer= {secondsOnTimer} />
               </TimeDisplay>
               }
               
-              {/* {status === STATUS.FASTFORWARDED && 
-              <div style={{fontSize: '1rem',  textTransform: 'uppercase',   letterSpacing: '.2rem'}}>
-              Time's Up! 
-              </div>
-              } */}
-
-              
-
               </Timer>
               
-              {status !== STATUS.INITIAL &&
-            <div  style={{fontSize: '0.75rem', textAlign: 'center', color: 'white', padding: '0.5rem'}} >
-              <>Countdown for </>
-              {totalSeconds > 60 && ( <> {String(Number(totalSeconds - (timeSecInput%60))/60)}min </>)}
-              {String(timeSecInput % 60)||'00'}sec
-              </div>}
-              
-              
+              {status !== STATUS.INITIAL && (status !== STATUS.FASTFORWARDED) && (secondsRemaining !== 0 && status !== STATUS.INITIAL) &&
+              <SupportText>
+                  <>In progress: countdown for </> 
+                  <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInput}/>
+                </SupportText>
+              }
 
+              {(status === STATUS.FASTFORWARDED || (secondsRemaining === 0 && status !== STATUS.INITIAL)) &&
+              <SupportText>
+                <>Finished: countdown for </>
+                <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInput}/>
+              </SupportText>
+              }
+              
+              {status == STATUS.INITIAL &&
+            <SupportText>
+            <>Please input time for a countdown above</>
+          </SupportText>}
+
+          
 
             <Buttons>
                 
@@ -180,7 +165,7 @@ const Countdown = () => {
                 <Button 
                     onClick={resetCountdown} 
                     style={{backgroundColor: 'navy'}}>
-                    Restart
+                    Reset
                 </Button>}
 
             {(status === STATUS.FASTFORWARDED || (secondsRemaining === 0 && status !== STATUS.INITIAL)) &&     
@@ -210,5 +195,3 @@ const Countdown = () => {
 
 export default Countdown;
               
-
-//{status === STATUS.STARTED ? <img  src={'pause-xxl.png'} style={{width:'20px'}} alt="play button"/> : <img  src={'ic_play_circle_filled_white_48px-512.png'} style={{width:'30px', justifyContent:'center', alignContent:'center'}} alt="play button"/>}

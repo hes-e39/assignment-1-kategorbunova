@@ -1,16 +1,9 @@
 import {useState, useEffect, useRef} from 'react'
-import { Buttons, Button, Input, Inputs, TimerContainer, Timer, TimerTitle, TimeDisplay } from '../../views/TimersView';
+import { Buttons, Button, Input, Inputs, TimerContainer, Timer, TimerTitle, TimeDisplay, SupportText } from '../../utils/styles';
+import { convertToSeconds, DisplayForText, DisplayForTime } from '../../utils/helpers';
+import { STATUS } from '../../utils/constants';
 
-const STATUS = {
-    INITIAL: 'Initial',
-    STARTED: 'Started',
-    STOPPED: 'Stopped',
-    FASTFORWARDED: 'Fastforwarded'
-  };
 
-function convertToSeconds(timeMinInput: number, timeSecInput: number) {
-    return (Number(timeMinInput || '0') * 60) + Number(timeSecInput || '0');
-}
 
 const XY = () => {
 
@@ -70,33 +63,50 @@ const XY = () => {
 
 
       useEffect(() => {
-        if (status === STATUS.STARTED) {
-          const totalSeconds = convertToSeconds(timeMinInput, timeSecInput);
-          setSecondsRemaining(totalSeconds);
-          setRepRemaining(Number(repInput));
+        if (
+          (status === STATUS.STARTED &&
+          secondsRemaining === 0 &&
+          repRemaining > 0)
+        ) {
+            const totalSeconds = convertToSeconds(timeMinInput, timeSecInput);
+            setSecondsRemaining(totalSeconds);
+            setRepRemaining(Number(repInput));
+            const reps = repRemaining - 1;
+    
+                    if (reps === 0) {
+                        setSecondsRemaining(0);
+                    setStatus(STATUS.STOPPED);
+                    
+                    } 
+                    else {
+                    setSecondsRemaining(totalSeconds);
+                    }
+          setRepRemaining(reps);
+        }
+      }, [secondsRemaining, status, repRemaining]);
+
+
       
+      useEffect(() => {
+        if (status === STATUS.STARTED) {
+        
+            setSecondsRemaining((prev) => {
+                if (prev >= 0) 
+                  return prev - 1;
+              });
+
           intervalRef.current = setInterval(() => {
             setSecondsRemaining((prevSec) => {
-              if (prevSec > 1) {
+              if (prevSec >= 0 ) {
                 return prevSec - 1; 
-              } else {
-                setRepRemaining((prevRep) => {
-                  if (prevRep > 1) {
-                    setSecondsRemaining(totalSeconds);
-                    return prevRep - 1;
-                  } else {
-                    clearInterval(intervalRef.current);
-                    setStatus(STATUS.STOPPED);
-                    return 0;
-                  }
-                });
-                return 0;
               }
+              return 0; 
             });
           }, 1000);
         }
-      
-        return () => clearInterval(intervalRef.current); 
+   
+        return () => clearInterval(intervalRef.current);  
+        
       }, [status]);
 
       
@@ -145,49 +155,55 @@ const XY = () => {
               </Inputs>
               )}
 
-              {status !== STATUS.INITIAL && status !== STATUS.FASTFORWARDED &&
+              {status !== STATUS.INITIAL &&
               <TimeDisplay isActive={status === STATUS.STARTED}>
-                {hoursOnTimer > 0 && ( <> {String(hoursOnTimer).padStart(2, '0')}:</>)}
-                {minutesOnTimer < 10 ? minutesOnTimer : String(minutesOnTimer)}:
-                  {String(secondsOnTimer).padStart(2, '0')}
+                <DisplayForTime hoursOnTimer={hoursOnTimer} minutesOnTimer={minutesOnTimer} secondsOnTimer= {secondsOnTimer} />
                 x {repRemaining}
               </TimeDisplay>
               }
               
-              {status === STATUS.FASTFORWARDED && 
-              <div style={{fontSize: '1rem',  textTransform: 'uppercase',   letterSpacing: '.2rem'}}>
-              Time's Up! 
-              </div>
-              }
-
-              
 
               </Timer>
               
-              {status !== STATUS.INITIAL &&
-            <div  style={{fontSize: '0.75rem', textAlign: 'center', color: 'darkgrey', padding: '0.5rem'}} >Countdown for: 
-              {totalSeconds > 60 && ( <> {String(timeMinInput).padStart(2, '0')}:</>)}
-              {String(timeSecInput).padStart(2, '0')||'00'}
-              </div>}
+
+            {status !== STATUS.INITIAL && (status !== STATUS.FASTFORWARDED) && (secondsRemaining !== 0 && status !== STATUS.INITIAL) &&
+            <SupportText>
+            <>In progress: </> 
+            <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInput}/>
+            , for {repInput} rounds
+            </SupportText>}
+
+                {status === STATUS.INITIAL &&
+                <SupportText>
+                <>Please input time for a time and repetitions above</>
+            </SupportText>}
+
+            {(status === STATUS.FASTFORWARDED || (secondsRemaining === 0 && status !== STATUS.INITIAL)) &&
+              <SupportText>
+                <>Finished: </>
+                <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInput}/>
+                , for {repInput} rounds
+              </SupportText>
+              }
               
               
               
 
             <Buttons>
                 
-            {status !== STATUS.FASTFORWARDED &&     
+            {(status !== STATUS.FASTFORWARDED && (secondsRemaining !== 0 || status === STATUS.INITIAL)) &&    
                 <Button onClick={startStopCountdown} isActive={status === STATUS.STARTED}>
                 {status === STATUS.STARTED ? 'Stop' : 'Start'}
                 </Button>}
 
-            {status !== STATUS.INITIAL && secondsRemaining !== totalSeconds &&
+            {(status !== STATUS.INITIAL || (secondsRemaining !== totalSeconds && repRemaining !== 0)) &&
                 <Button 
                     onClick={resetCountdown} 
                     style={{backgroundColor: 'navy'}}>
                     Reset
                 </Button>}
 
-            {status === STATUS.FASTFORWARDED &&     
+            {(status === STATUS.FASTFORWARDED || (secondsRemaining === 0 && status !== STATUS.INITIAL)) &&     
             <Button 
             onClick={initialCountdown} 
             style={{backgroundColor: 'steelblue'}}>
@@ -195,7 +211,7 @@ const XY = () => {
             </Button>
              }
 
-            {status !== STATUS.INITIAL && status !== STATUS.FASTFORWARDED &&
+            {status !== STATUS.INITIAL && status !== STATUS.FASTFORWARDED && secondsRemaining !== 0 && 
             <Button 
                     onClick={fastforwardCountdown} 
                     //type="button" 
