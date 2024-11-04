@@ -79,6 +79,7 @@ const Tabata = () => {
         setStatus(STATUS.INITIAL);
       }  
 
+      //this effect takes care of reps when seconds for both work and rest are complete 
       useEffect(() => {
         if (status === STATUS.STARTED &&
           secondsRemainingRest === 0 &&
@@ -100,10 +101,12 @@ const Tabata = () => {
           }
       }, [secondsRemainingWork, secondsRemainingRest, status, repRemaining, timeMinInputWork, timeMinInputRest, timeSecInputRest, timeSecInputWork]);
 
+
+      //this effect takes care of the seconds
       useEffect(() => {
         if (status === STATUS.STARTED) {
 
-      
+          //this decrements the seconds immideately without waiting for the first second – only implemented for the very first second when reps are still intact
           if (secondsRemainingWork === totalSecondsWork
             && repRemaining === Number(repInput)
           ) {
@@ -112,8 +115,6 @@ const Tabata = () => {
                   return prevWork - 1;
                   return prevWork; //this is added to fix a TypeScript error to ensure we never return undefined
               });
-
-
           } 
 
           else if (secondsRemainingWork > 0) {
@@ -149,15 +150,15 @@ const Tabata = () => {
             intervalRef.current = null;
           }
         }
-      }, [status, secondsRemainingWork, secondsRemainingRest]);
-      
-   
+      }, [status, secondsRemainingWork, secondsRemainingRest, repInput, repRemaining, totalSecondsWork]);
 
     return (
         <div className="App"> 
 
             <TimerContainer isActive={status === STATUS.STARTED}>
             <TimerTitle>Tabata</TimerTitle> 
+
+            {/* INPUTS FOR INITIAL STATE*/} 
               <Timer>
               {status === STATUS.INITIAL  && (
               <Inputs>
@@ -219,13 +220,16 @@ const Tabata = () => {
               </Inputs>
               )}
 
+              {/* text display at the initial state to indicate the intervals for work and rest  */}
               {status === STATUS.INITIAL  && (
               <div style = {{display: 'flex', gap: '68px', fontSize: '11px', justifyContent: 'left', color: 'grey', marginLeft: '37px'}}>
               <div>Work</div>
               <div>Rest</div>
               </div>)}
-              
 
+              {/* DYMANIC TIME DISPLAY*/} 
+
+              {/* display work seconds interval only when there are seconds for Remanining Work */}
               {status !== STATUS.INITIAL && (secondsRemainingWork > 0) &&
               <TimeDisplay isActive={status === STATUS.STARTED}>
                 <div style = {{fontSize: '14px'}}>Work left</div>
@@ -235,7 +239,8 @@ const Tabata = () => {
               </TimeDisplay>
               }
 
-            {(status !== STATUS.INITIAL && ((secondsRemainingWork === 0 && secondsRemainingRest >= 0) || (secondsRemainingTotal===0))) &&
+              {/* when we run out of Work seconds, display rest seconds */}
+              {(status !== STATUS.INITIAL && ((secondsRemainingWork === 0 && secondsRemainingRest >= 0) || (secondsRemainingTotal===0))) &&
               <TimeDisplay isActive={status === STATUS.STARTED}>
                 <div style = {{fontSize: '14px'}}>Rest left</div>
                 <DisplayForTime {...TimeOnTimer({ secondsRemaining: secondsRemainingRest})} />
@@ -244,75 +249,62 @@ const Tabata = () => {
               </TimeDisplay>
               }
 
-
-
-              
-
               </Timer>
               
 
-            {status !== STATUS.INITIAL && (status !== STATUS.FASTFORWARDED) && (secondsRemainingRest !== 0 || secondsRemainingWork !== 0) &&
-            <SupportText>
-            In progress:
-            <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInputWork}/>
-            <div>work and </div>
-            <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInputRest}/>
-            <div>rest, for {repInput} rounds</div>
-            </SupportText>}
+              {/* DYMANIC TEXT LINE*/}
 
-            
-
+              {/* Show this text at initial state*/}
               {status === STATUS.INITIAL &&
-                <SupportText>
-                Please input time for a time for exercise and rest, plus repetitions above
-            </SupportText>}
+                  <SupportText>
+                  Please input time for a time for exercise and rest, plus repetitions above
+                  </SupportText>}
               
-            {(status === STATUS.FASTFORWARDED || (secondsRemainingRest === 0 && secondsRemainingWork === 0 && repRemaining === 0 && status !== STATUS.INITIAL)) &&
-              <SupportText>
-                Finished:
-                <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInputWork}/>
-            <div>work and </div>
-            <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInputRest}/>
-            <div>rest, for {repInput} rounds</div>
-              </SupportText>
-              }
+              {/* Show this text when timer in progress */}
+              {status !== STATUS.INITIAL && (status !== STATUS.FASTFORWARDED) && (secondsRemainingRest !== 0 || secondsRemainingWork !== 0) &&
+                  <SupportText>
+                  In progress:
+                  <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInputWork}/>
+                  <div>work and </div>
+                  <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInputRest}/>
+                  <div>rest, for {repInput} rounds</div>
+                  </SupportText>}
+              
+              {/* Show this text when timer is finished or fastforwarded */}
+              {(status === STATUS.FASTFORWARDED || (secondsRemainingRest === 0 && secondsRemainingWork === 0 && repRemaining === 0 && status !== STATUS.INITIAL)) &&
+                  <SupportText>
+                  Finished:
+                  <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInputWork}/>
+                  <div>work and </div>
+                  <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInputRest}/>
+                  <div>rest, for {repInput} rounds</div>
+                  </SupportText>}
               
               
-              
+              {/* DYMANIC BUTTONS*/}
 
             <Buttons>
-                
             {status !== STATUS.FASTFORWARDED && ((secondsRemainingRest !== 0 || secondsRemainingWork !==0) || status === STATUS.INITIAL) &&       
                 <Button onClick={startStopCountdown} isActive={status === STATUS.STARTED}>
                 {status === STATUS.STARTED ? 'Pause' : 'Start'}
                 </Button>}
 
             {(status !== STATUS.INITIAL || (secondsRemainingRest > 0 && secondsRemainingWork > 0)) &&
-                <Button 
-                    onClick={resetCountdown} 
-                    style={{backgroundColor: 'navy'}}>
-                    Reset
+                <Button onClick={resetCountdown} style={{backgroundColor: 'navy'}}>
+                  Reset
                 </Button>}
 
             {(status === STATUS.FASTFORWARDED || (secondsRemainingRest === 0 && status !== STATUS.INITIAL)) &&      
-            <Button 
-            onClick={initialCountdown} 
-            style={{backgroundColor: 'steelblue'}}>
-            New Input
-            </Button>
-             }
+                <Button onClick={initialCountdown} style={{backgroundColor: 'steelblue'}}>
+                  New Input
+                </Button>}
 
-            {((status !== STATUS.INITIAL && (secondsRemainingRest > 0 && secondsRemainingWork > 0)) || status !== STATUS.FASTFORWARDED)  &&
-            <Button 
-                    onClick={fastforwardCountdown} 
-                    //type="button" 
-                    style={{backgroundColor: 'darkgreen'}}>
-                    Forward
+            {(status !== STATUS.INITIAL && (secondsRemainingRest > 0 && secondsRemainingWork > 0) && status !== STATUS.FASTFORWARDED)  &&
+                <Button onClick={fastforwardCountdown} style={{backgroundColor: 'darkgreen'}}>
+                  Forward
                 </Button>}   
-
-            
-              
             </Buttons>
+
             </TimerContainer>
         </div>
       )

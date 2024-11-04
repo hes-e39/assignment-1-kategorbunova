@@ -67,6 +67,7 @@ const Stopwatch = () => {
         if (status === STATUS.STARTED) {
           const totalSeconds = convertToSeconds(timeMinInput, timeSecInput);
 
+          //this decrements the seconds immideately without waiting for the first second
           setSecondsPassed((prev) => {
             if (prev < totalSeconds)
             return prev + 1;
@@ -101,9 +102,9 @@ const Stopwatch = () => {
         <div className="App"> 
 
             <TimerContainer isActive={status === STATUS.STARTED}>
-
             <TimerTitle>Stopwatch</TimerTitle> 
 
+            {/* INPUTS FOR INITIAL STATE*/} 
               <Timer>
               {status === STATUS.INITIAL  && (
               <Inputs>
@@ -138,25 +139,32 @@ const Stopwatch = () => {
               }           
               </Timer>
 
+              {/* DYMANIC TEXT LINE*/}
+
+              {/* Show this text at initial state*/} 
+              {status === STATUS.INITIAL &&
+                <SupportText>
+                Please input time for a stopwatch above
+                </SupportText>}
+
+              {/* Show this text when timer in progress */}
               {status !== STATUS.INITIAL && (status !== STATUS.FASTFORWARDED) && (secondsPassed !== totalSeconds) &&
                 <SupportText>
-                  In progress: stopwatch for
-                  <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInput}/>
+                In progress: stopwatch for
+                <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInput}/>
                 </SupportText>
               }
 
+              {/* Show this text when timer is finished or fastforwarded */}
               {(status === STATUS.FASTFORWARDED || (secondsPassed === totalSeconds && status !== STATUS.INITIAL)) &&
               <SupportText>
                 Finished: stopwatch for
                 <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInput}/>
-              </SupportText>
+                </SupportText>
               }
 
-              {status === STATUS.INITIAL &&
-              <SupportText>
-                Please input time for a stopwatch above
-              </SupportText>}
 
+            {/* DYMANIC BUTTONS*/}  
 
               <Buttons>
                 {(status !== STATUS.FASTFORWARDED && (secondsPassed !== totalSeconds || status === STATUS.INITIAL)) &&
@@ -165,27 +173,20 @@ const Stopwatch = () => {
                     </Button>}
     
                 {status !== STATUS.INITIAL  &&
-                    <Button 
-                        onClick={resetCountdown} 
-                        style={{backgroundColor: 'navy'}}>
-                        Reset
+                    <Button onClick={resetCountdown} style={{backgroundColor: 'navy'}}>
+                    Reset
                     </Button>}
     
                 {(status === STATUS.FASTFORWARDED || (secondsPassed === totalSeconds && status !== STATUS.INITIAL)) &&     
-                <Button 
-                onClick={initialCountdown} 
-                style={{backgroundColor: 'steelblue'}}>
-                New Input
-                </Button>
-                 }
+                    <Button onClick={initialCountdown} style={{backgroundColor: 'steelblue'}}>
+                    New Input
+                    </Button>}
     
                 {status !== STATUS.INITIAL && status !== STATUS.FASTFORWARDED && secondsPassed !== totalSeconds &&    
-                <Button 
-                        onClick={fastforwardCountdown} 
-                        //type="button" 
-                        style={{backgroundColor: 'darkgreen'}}>
-                        Forward
+                    <Button onClick={fastforwardCountdown} style={{backgroundColor: 'darkgreen'}}>
+                    Forward
                     </Button>}   
+
             </Buttons>
             </TimerContainer>
         </div>

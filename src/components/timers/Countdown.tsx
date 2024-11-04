@@ -66,12 +66,13 @@ const Countdown = () => {
       }  
 
 
-      const intervalRef = useRef<number | null>();
+    const intervalRef = useRef<number | null>();
 
 
     useEffect(() => {
         if (status === STATUS.STARTED) {
 
+          //this decrements the seconds immideately without waiting for the first second
           setSecondsRemaining((prev) => {
             if (prev > 1) 
               return prev - 1;
@@ -103,8 +104,11 @@ const Countdown = () => {
 
     return (
         <div className="App"> 
+
             <TimerContainer isActive={status === STATUS.STARTED}>
             <TimerTitle>Countdown</TimerTitle> 
+
+            {/* INPUTS FOR INITIAL STATE*/} 
               <Timer>
               {status === STATUS.INITIAL  && (
               <Inputs>
@@ -133,6 +137,7 @@ const Countdown = () => {
               </Inputs>
               )}
 
+              {/* TIME DISPLAY*/} 
               {(status !== STATUS.INITIAL)  &&
               <TimeDisplay isActive={status === STATUS.STARTED}>
                 <DisplayForTime hoursOnTimer={hoursOnTimer} minutesOnTimer={minutesOnTimer} secondsOnTimer= {secondsOnTimer} />
@@ -140,27 +145,31 @@ const Countdown = () => {
               }
               
               </Timer>
-              
-              {status !== STATUS.INITIAL && (status !== STATUS.FASTFORWARDED) && (secondsRemaining !== 0) &&
-              <SupportText>
-                  In progress: countdown for
-                  <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInput}/>
-                </SupportText>
-              }
 
+              {/* DYMANIC TEXT LINE*/}
+
+             {/* Show this text at initial state*/} 
+             {status === STATUS.INITIAL &&
+                <SupportText>
+                Please input time for a countdown above
+                </SupportText>}
+              
+              {/* Show this text when timer in progress */}
+              {status !== STATUS.INITIAL && (status !== STATUS.FASTFORWARDED) && (secondsRemaining !== 0) &&
+                <SupportText>
+                In progress: countdown for
+                <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInput}/>
+                </SupportText>}
+
+              {/* Show this text when timer is finished or fastforwarded */}
               {(status === STATUS.FASTFORWARDED || (secondsRemaining === 0 && status !== STATUS.INITIAL)) &&
-              <SupportText>
+                <SupportText>
                 Finished: countdown for
                 <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInput}/>
-              </SupportText>
-              }
-              
-              {status === STATUS.INITIAL &&
-            <SupportText>
-            Please input time for a countdown above
-          </SupportText>}
+                </SupportText>}
 
-          
+
+            {/* DYMANIC BUTTONS*/}  
 
             <Buttons>
                 
@@ -170,30 +179,20 @@ const Countdown = () => {
                 </Button>}
 
             {status !== STATUS.INITIAL && secondsRemaining !== totalSeconds &&
-                <Button 
-                    onClick={resetCountdown} 
-                    style={{backgroundColor: 'navy'}}>
-                    Reset
+                <Button onClick={resetCountdown} style={{backgroundColor: 'navy'}}>
+                Reset
                 </Button>}
 
             {(status === STATUS.FASTFORWARDED || (secondsRemaining === 0 && status !== STATUS.INITIAL)) &&     
-            <Button 
-            onClick={initialCountdown} 
-            style={{backgroundColor: 'steelblue'}}>
-            New Input
-            </Button>
-             }
+                <Button onClick={initialCountdown} style={{backgroundColor: 'steelblue'}}>
+                New Input
+                </Button>}
 
             {status !== STATUS.INITIAL && status !== STATUS.FASTFORWARDED && secondsRemaining !== 0 &&    
-            <Button 
-                    onClick={fastforwardCountdown} 
-                    //type="button" 
-                    style={{backgroundColor: 'darkgreen'}}>
-                    Forward
+                <Button onClick={fastforwardCountdown} style={{backgroundColor: 'darkgreen'}}>
+                Forward
                 </Button>}   
 
-            
-              
             </Buttons>
             </TimerContainer>
         </div>
