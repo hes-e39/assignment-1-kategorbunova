@@ -8,7 +8,8 @@ const Wrapper = styled.div`
 const Container = styled.div`
   padding: 20px;
   display: flex;
-  justify-content: space-between;
+  justify-content: left;
+
 `;
 
 const Title = styled.div`
@@ -22,9 +23,12 @@ const RenderComponent = styled.div`
   padding: 25px;
   display: flex;
   align-items: center;
+  min-width: 15rem;
 `;
 
-const Documentation = styled.table``;
+const Documentation = styled.table`
+  width: 100%
+`;
 
 const DocumentComponent = ({
   title,

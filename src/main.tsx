@@ -17,10 +17,10 @@ const PageIndex = () => {
       <h1 style={{ textAlign: 'center' }}>Workout Timers</h1>
       <ul style={navListStyle}>
         <li>
-          <NavLink to="/" style={linkStyle} >Timers</NavLink>
+          <NavLink to="/" style={({ isActive }) => linkStyle(isActive)} >Timers</NavLink>
         </li>
         <li>
-          <NavLink to="/docs" style={linkStyle}> Documentation</NavLink>
+          <NavLink to="/docs"style={({ isActive }) => linkStyle(isActive)}> Documentation</NavLink>
         </li>
       </ul>
       <Outlet />
@@ -37,11 +37,12 @@ const navListStyle = {
   marginTop: '1rem',
 };
 
-const linkStyle = {
+const linkStyle = (isActive) => ({
   textDecoration: 'underline',
   color: 'black',
   fontSize: '1.1rem',
-};
+  fontWeight: isActive ? 'bold' : 'normal',
+});
 
 
 // const TimersPages = () => {
