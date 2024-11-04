@@ -251,9 +251,9 @@ const Tabata = () => {
                 {status !== STATUS.INITIAL && status !== STATUS.FASTFORWARDED && (secondsRemainingRest !== 0 || secondsRemainingWork !== 0) && (
                     <SupportText>
                         In progress:
-                        <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInputWork} />
+                        <DisplayForText totalSeconds={totalSecondsWork} timeSecInput={timeSecInputWork} />
                         <div>work and </div>
-                        <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInputRest} />
+                        <DisplayForText totalSeconds={totalSecondsRest} timeSecInput={timeSecInputRest} />
                         <div>rest, for {repInput} rounds</div>
                     </SupportText>
                 )}
@@ -262,9 +262,9 @@ const Tabata = () => {
                 {(status === STATUS.FASTFORWARDED || (secondsRemainingRest === 0 && secondsRemainingWork === 0 && repRemaining === 0 && status !== STATUS.INITIAL)) && (
                     <SupportText>
                         Finished:
-                        <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInputWork} />
+                        <DisplayForText totalSeconds={totalSecondsWork} timeSecInput={timeSecInputWork} />
                         <div>work and </div>
-                        <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInputRest} />
+                        <DisplayForText totalSeconds={totalSecondsRest} timeSecInput={timeSecInputRest} />
                         <div>rest, for {repInput} rounds</div>
                     </SupportText>
                 )}
