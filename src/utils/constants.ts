@@ -4,3 +4,6 @@ export const STATUS = {
     STOPPED: 'Stopped',
     FASTFORWARDED: 'Fastforwarded'
   } as const;
+
+
+  export type StatusType = typeof STATUS[keyof typeof STATUS];

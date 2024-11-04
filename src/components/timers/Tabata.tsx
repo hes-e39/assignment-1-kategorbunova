@@ -1,33 +1,13 @@
 import {useState, useEffect, useRef} from 'react'
 import { Buttons, Button, Input, Inputs, TimerContainer, Timer, TimerTitle, TimeDisplay, SupportText } from '../../utils/styles';
-import { convertToSeconds, DisplayForText } from '../../utils/helpers';
+import { convertToSeconds, DisplayForText, DisplayForTime, TimeOnTimer } from '../../utils/helpers';
 import { STATUS } from '../../utils/constants';
+import type { StatusType } from '../../utils/constants';
 
 
 
 
 const Tabata = () => {
-
-    const DisplayForTime = ({ hoursOnTimer, minutesOnTimer, secondsOnTimer }) => {
-        const hours = hoursOnTimer > 0 ? `${String(hoursOnTimer).padStart(2, '0')}:` : '';
-        const minutes = minutesOnTimer < 10 ? `0${minutesOnTimer}:` : `${minutesOnTimer}:`;
-        const seconds = `${String(secondsOnTimer).padStart(2, '0')}`;
-      
-        return (
-          <div>{hours}{minutes}{seconds}</div>
-        );
-      };
-
-      const TimeOnTimer = (secondsRemaining) => {
-        const secondsOnTimer = secondsRemaining % 60
-        const minutesRemaining = (secondsRemaining - secondsOnTimer) / 60
-        const minutesOnTimer = minutesRemaining % 60
-        const hoursOnTimer = (minutesRemaining - minutesOnTimer) / 60
-    
-        return(
-            {hoursOnTimer, minutesOnTimer, secondsOnTimer}
-        )
-    }
 
     const [timeMinInputRest, setTimeMinInputRest] = useState('')
     const [timeSecInputRest, setTimeSecInputRest] = useState('')
@@ -39,10 +19,10 @@ const Tabata = () => {
 
     const [repInput, setRepInput] = useState('')
 
-    const [status, setStatus] = useState(STATUS.INITIAL);
+    const [status, setStatus] = useState<StatusType>(STATUS.INITIAL);
     const [secondsRemainingTotal, setSecondsRemainingTotal] = useState(0)
     const [repRemaining, setRepRemaining] = useState(0)
-    const intervalRef = useRef();
+    const intervalRef = useRef<number | null>();
 
     const totalSecondsWork = convertToSeconds(timeMinInputWork, timeSecInputWork);
     const totalSecondsRest = convertToSeconds(timeMinInputRest,timeSecInputRest);
@@ -50,9 +30,12 @@ const Tabata = () => {
   
     const startStopCountdown = () => {
 
-              if (isNaN(totalSeconds) || (timeMinInputRest === '' && timeSecInputRest === '') || totalSeconds <= 0 || isNaN(repInput) || (repInput === '')) {
-                alert('Please enter a valid time.');
-                }
+                if (Number.isNaN(totalSeconds) || (timeMinInputRest === '' && timeSecInputRest === '') ||  (timeMinInputWork=== '' && timeSecInputWork === '') || totalSeconds <= 0 || Number.isNaN(repInput) || (repInput === '')) {
+                    alert('Please enter a valid time.');
+                    }
+                  else if (totalSeconds > 3600) {
+                    alert("Friendly caution: excercise over an hour can lead to overtraining. Please enter a time under an hour.")
+                  }
               else {
                 if (status !== STATUS.STARTED) {
                     if (status===STATUS.INITIAL) {
@@ -86,7 +69,10 @@ const Tabata = () => {
         setSecondsRemainingRest(0);
         setSecondsRemainingWork(0);
         setRepRemaining(0);
-        clearInterval(intervalRef.current); 
+        if (intervalRef.current !== null) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
       }
 
     const initialCountdown = () => {
@@ -112,39 +98,39 @@ const Tabata = () => {
               setSecondsRemainingTotal(totalSecondsWork + totalSecondsRest);
             }
           }
-      }, [secondsRemainingWork, secondsRemainingRest, status, repRemaining]);
+      }, [secondsRemainingWork, secondsRemainingRest, status, repRemaining, timeMinInputWork, timeMinInputRest, timeSecInputRest, timeSecInputWork]);
 
       useEffect(() => {
         if (status === STATUS.STARTED) {
 
-          clearInterval(intervalRef.current);
       
-          if (secondsRemainingWork > 0) {
+          if (secondsRemainingWork === totalSecondsWork
+            && repRemaining === Number(repInput)
+          ) {
+            setSecondsRemainingWork((prevWork) => {
+                if (prevWork > 1) 
+                  return prevWork - 1;
+                  return prevWork; //this is added to fix a TypeScript error to ensure we never return undefined
+              });
 
-            // setSecondsRemainingWork((prevWork) => {
-            //     if (prevWork - 1 > 0) 
-            //       return prevWork - 1;
-            //   });
 
+          } 
+
+          else if (secondsRemainingWork > 0) {
             intervalRef.current = setInterval(() => {
               setSecondsRemainingWork((prevWork) => {
-                if (prevWork > 0) {
+                if (prevWork > 1) {
                   return prevWork - 1;
                 } else {
                   return 0;
                 }
               });
             }, 1000);
-          } 
+          }
           
           else if (secondsRemainingWork === 0 && 
             secondsRemainingRest > 0) {
             
-            // setSecondsRemainingRest((prevRest) => {
-            //     if (prevRest > 1) 
-            //       return prevRest - 1;
-            //   });
-
             intervalRef.current = setInterval(() => {
               setSecondsRemainingRest((prevRest) => {
                 if (prevRest > 0) {
@@ -157,7 +143,12 @@ const Tabata = () => {
           }
         }
       
-        return () => clearInterval(intervalRef.current);
+        return () => {
+          if (intervalRef.current !== null) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+        }
       }, [status, secondsRemainingWork, secondsRemainingRest]);
       
    
@@ -165,14 +156,14 @@ const Tabata = () => {
     return (
         <div className="App"> 
 
-            <TimerContainer isActive={status === STATUS.STARTED} isInitial={status === STATUS.INITIAL}>
+            <TimerContainer isActive={status === STATUS.STARTED}>
             <TimerTitle>Tabata</TimerTitle> 
               <Timer>
               {status === STATUS.INITIAL  && (
               <Inputs>
               <Input>     
                   <input 
-                      style={{ maxWidth: '3rem', border: '0px solid white', fontSize: '2rem', textAlign: 'right' }}
+                      style={{ maxWidth: '2.5rem', border: '0px solid white', fontSize: '2rem', textAlign: 'right' }}
                       id="timeMinInput" 
                       placeholder='10'
                       value={timeMinInputWork}
@@ -183,7 +174,7 @@ const Tabata = () => {
               </Input>
               <Input>:
                   <input 
-                      style={{ maxWidth: '2.7rem', border: '0px solid white', fontSize: '2rem', textAlign: 'left' }}
+                      style={{ maxWidth: '2.5rem', border: '0px solid white', fontSize: '2rem', textAlign: 'left' }}
                       id="timeInput" 
                       value={timeSecInputWork}
                       placeholder='00'
@@ -194,7 +185,7 @@ const Tabata = () => {
               </Input>
               <Input>     
                   <input 
-                      style={{ maxWidth: '2.7rem', border: '0px solid white', fontSize: '2rem', textAlign: 'right' }}
+                      style={{ maxWidth: '2.5rem', border: '0px solid white', fontSize: '2rem', textAlign: 'right' }}
                       id="timeMinInput" 
                       placeholder='10'
                       value={timeMinInputRest}
@@ -228,19 +219,31 @@ const Tabata = () => {
               </Inputs>
               )}
 
-              {status !== STATUS.INITIAL && secondsRemainingWork > 0 &&
+              {status === STATUS.INITIAL  && (
+              <div style = {{display: 'flex', gap: '68px', fontSize: '11px', justifyContent: 'left', color: 'grey', marginLeft: '37px'}}>
+              <div>Work</div>
+              <div>Rest</div>
+              </div>)}
+              
+
+              {status !== STATUS.INITIAL && (secondsRemainingWork > 0) &&
               <TimeDisplay isActive={status === STATUS.STARTED}>
-                <DisplayForTime {...TimeOnTimer(secondsRemainingWork)} />
-                <div>x {repRemaining}</div>
+                <div style = {{fontSize: '14px'}}>Work left</div>
+                <DisplayForTime {...TimeOnTimer({ secondsRemaining: secondsRemainingWork})} />
+                <div style = {{fontSize: '20px', color: 'lightgrey'}}>|</div>
+                <div style = {{fontSize: '14px'}}>On round</div> {repRemaining}
               </TimeDisplay>
               }
 
-            {status !== STATUS.INITIAL && ((secondsRemainingWork === 0 && secondsRemainingTotal > 0) || (secondsRemainingTotal===0)) &&
+            {(status !== STATUS.INITIAL && ((secondsRemainingWork === 0 && secondsRemainingRest >= 0) || (secondsRemainingTotal===0))) &&
               <TimeDisplay isActive={status === STATUS.STARTED}>
-                <DisplayForTime {...TimeOnTimer(secondsRemainingRest)} />
-                x {repRemaining}
+                <div style = {{fontSize: '14px'}}>Rest left</div>
+                <DisplayForTime {...TimeOnTimer({ secondsRemaining: secondsRemainingRest})} />
+                <div style = {{fontSize: '20px', color: 'lightgrey'}}>|</div>
+                <div style = {{fontSize: '14px'}}>On round</div> {repRemaining}
               </TimeDisplay>
               }
+
 
 
               
@@ -248,9 +251,9 @@ const Tabata = () => {
               </Timer>
               
 
-            {status !== STATUS.INITIAL && (status !== STATUS.FASTFORWARDED) && (secondsRemainingRest !== 0 && secondsRemainingWork !== 0 && status !== STATUS.INITIAL) &&
+            {status !== STATUS.INITIAL && (status !== STATUS.FASTFORWARDED) && (secondsRemainingRest !== 0 || secondsRemainingWork !== 0) &&
             <SupportText>
-            <>In progress: </> 
+            In progress:
             <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInputWork}/>
             <div>work and </div>
             <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInputRest}/>
@@ -261,12 +264,12 @@ const Tabata = () => {
 
               {status === STATUS.INITIAL &&
                 <SupportText>
-                <>Please input time for a time for 1) exercise, 2) rest and 3) repetitions above</>
+                Please input time for a time for exercise and rest, plus repetitions above
             </SupportText>}
               
             {(status === STATUS.FASTFORWARDED || (secondsRemainingRest === 0 && secondsRemainingWork === 0 && repRemaining === 0 && status !== STATUS.INITIAL)) &&
               <SupportText>
-                <>Finished: </>
+                Finished:
                 <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInputWork}/>
             <div>work and </div>
             <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInputRest}/>
@@ -279,19 +282,19 @@ const Tabata = () => {
 
             <Buttons>
                 
-            {status !== STATUS.FASTFORWARDED &&     
+            {status !== STATUS.FASTFORWARDED && ((secondsRemainingRest !== 0 || secondsRemainingWork !==0) || status === STATUS.INITIAL) &&       
                 <Button onClick={startStopCountdown} isActive={status === STATUS.STARTED}>
-                {status === STATUS.STARTED ? 'Stop' : 'Start'}
+                {status === STATUS.STARTED ? 'Pause' : 'Start'}
                 </Button>}
 
-            {status !== STATUS.INITIAL && secondsRemainingTotal !== totalSeconds &&
+            {(status !== STATUS.INITIAL || (secondsRemainingRest > 0 && secondsRemainingWork > 0)) &&
                 <Button 
                     onClick={resetCountdown} 
                     style={{backgroundColor: 'navy'}}>
                     Reset
                 </Button>}
 
-            {status === STATUS.FASTFORWARDED &&     
+            {(status === STATUS.FASTFORWARDED || (secondsRemainingRest === 0 && status !== STATUS.INITIAL)) &&      
             <Button 
             onClick={initialCountdown} 
             style={{backgroundColor: 'steelblue'}}>
@@ -299,7 +302,7 @@ const Tabata = () => {
             </Button>
              }
 
-            {status !== STATUS.INITIAL && status !== STATUS.FASTFORWARDED &&
+            {((status !== STATUS.INITIAL && (secondsRemainingRest > 0 && secondsRemainingWork > 0)) || status !== STATUS.FASTFORWARDED)  &&
             <Button 
                     onClick={fastforwardCountdown} 
                     //type="button" 

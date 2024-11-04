@@ -2,6 +2,7 @@ import {useState, useEffect, useRef} from 'react'
 import { Buttons, Button, Input, Inputs, TimerContainer, Timer, TimerTitle, TimeDisplay, SupportText } from '../../utils/styles';
 import { convertToSeconds, DisplayForText, DisplayForTime } from '../../utils/helpers';
 import { STATUS } from '../../utils/constants';
+import type { StatusType } from '../../utils/constants';
 
 
 
@@ -11,10 +12,10 @@ const XY = () => {
     const [timeSecInput, setTimeSecInput] = useState('')
     const [repInput, setRepInput] = useState('')
 
-    const [status, setStatus] = useState(STATUS.INITIAL);
+    const [status, setStatus] = useState<StatusType>(STATUS.INITIAL);
     const [secondsRemaining, setSecondsRemaining] = useState(0)
     const [repRemaining, setRepRemaining] = useState(0)
-    const intervalRef = useRef(); 
+    const intervalRef = useRef<number | null>();
 
 
     const secondsOnTimer = secondsRemaining % 60
@@ -26,9 +27,13 @@ const XY = () => {
   
     const startStopCountdown = () => {
 
-              if (isNaN(totalSeconds) || (timeMinInput === '' && timeSecInput === '') || totalSeconds <= 0 || isNaN(repInput) || (repInput === '')) {
-                alert('Please enter a valid time.');
-                }
+
+                if (Number.isNaN(totalSeconds) || (timeMinInput === '' && timeSecInput === '') || totalSeconds <= 0 || Number.isNaN(repInput) || (repInput === '')) {
+                    alert('Please enter a valid time.');
+                    }
+                  else if (totalSeconds > 3600) {
+                    alert("Friendly caution: excercise over an hour can lead to overtraining. Please enter a time under an hour.")
+                  }
               else {
                 if (status !== STATUS.STARTED) {
                     if (status===STATUS.INITIAL) {
@@ -54,7 +59,10 @@ const XY = () => {
         setStatus(STATUS.FASTFORWARDED);
         setSecondsRemaining(0);
         setRepRemaining(0);
-        clearInterval(intervalRef.current); 
+        if (intervalRef.current !== null) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
       }
 
     const initialCountdown = () => {
@@ -83,7 +91,7 @@ const XY = () => {
                     }
           setRepRemaining(reps);
         }
-      }, [secondsRemaining, status, repRemaining]);
+      }, [secondsRemaining, status, repRemaining, repInput, timeMinInput, timeSecInput]);
 
 
       
@@ -91,21 +99,28 @@ const XY = () => {
         if (status === STATUS.STARTED) {
         
             setSecondsRemaining((prev) => {
-                if (prev >= 0) 
+                if (prev > 1) 
                   return prev - 1;
+                return prev; //this is added to fix a TypeScript error to ensure we never return undefined
               });
 
           intervalRef.current = setInterval(() => {
             setSecondsRemaining((prevSec) => {
-              if (prevSec >= 0 ) {
-                return prevSec - 1; 
+              if (prevSec > 1 ) {
+                return prevSec - 1;
               }
               return 0; 
             });
+
           }, 1000);
         }
    
-        return () => clearInterval(intervalRef.current);  
+        return () => {
+                if (intervalRef.current !== null) {
+                  clearInterval(intervalRef.current);
+                  intervalRef.current = null;
+                }
+        };  
         
       }, [status]);
 
@@ -114,7 +129,7 @@ const XY = () => {
     return (
         <div className="App"> 
 
-            <TimerContainer isActive={status === STATUS.STARTED} isInitial={status === STATUS.INITIAL}>
+            <TimerContainer isActive={status === STATUS.STARTED}>
             <TimerTitle>XY</TimerTitle> 
               <Timer>
               {status === STATUS.INITIAL  && (
@@ -157,30 +172,33 @@ const XY = () => {
 
               {status !== STATUS.INITIAL &&
               <TimeDisplay isActive={status === STATUS.STARTED}>
+                <div style = {{fontSize: '14px'}}>Left</div>
                 <DisplayForTime hoursOnTimer={hoursOnTimer} minutesOnTimer={minutesOnTimer} secondsOnTimer= {secondsOnTimer} />
-                x {repRemaining}
+                <div style = {{fontSize: '20px', color: 'lightgrey'}}>|</div>
+                <div style = {{fontSize: '14px'}}>On round</div> {repRemaining}
               </TimeDisplay>
               }
+
               
 
               </Timer>
               
 
-            {status !== STATUS.INITIAL && (status !== STATUS.FASTFORWARDED) && (secondsRemaining !== 0 && status !== STATUS.INITIAL) &&
+            {status !== STATUS.INITIAL && (status !== STATUS.FASTFORWARDED) && (secondsRemaining !== 0) &&
             <SupportText>
-            <>In progress: </> 
+            In progress:
             <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInput}/>
             , for {repInput} rounds
             </SupportText>}
 
                 {status === STATUS.INITIAL &&
                 <SupportText>
-                <>Please input time for a time and repetitions above</>
+                Please input time for a time and repetitions above
             </SupportText>}
 
             {(status === STATUS.FASTFORWARDED || (secondsRemaining === 0 && status !== STATUS.INITIAL)) &&
               <SupportText>
-                <>Finished: </>
+                Finished:
                 <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInput}/>
                 , for {repInput} rounds
               </SupportText>
@@ -193,7 +211,7 @@ const XY = () => {
                 
             {(status !== STATUS.FASTFORWARDED && (secondsRemaining !== 0 || status === STATUS.INITIAL)) &&    
                 <Button onClick={startStopCountdown} isActive={status === STATUS.STARTED}>
-                {status === STATUS.STARTED ? 'Stop' : 'Start'}
+                {status === STATUS.STARTED ? 'Pause' : 'Start'}
                 </Button>}
 
             {(status !== STATUS.INITIAL || (secondsRemaining !== totalSeconds && repRemaining !== 0)) &&

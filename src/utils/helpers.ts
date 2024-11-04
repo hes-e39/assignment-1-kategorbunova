@@ -2,20 +2,20 @@
 // calculates number of minutes when passed in seconds. Things of this nature that you don't want to copy/paste
 // everywhere.
 
-function convertToSeconds(timeMinInput: number, timeSecInput: number) {
+function convertToSeconds(timeMinInput: number|string, timeSecInput: number|string) {
     return (Number(timeMinInput || '0') * 60) + Number(timeSecInput || '0');
 }
 
 type DisplayForTextProps = {
-    totalSeconds: number;
-    timeSecInput: number;
+    totalSeconds: number | string;
+    timeSecInput: number | string;
   };
 
 function DisplayForText({ totalSeconds, timeSecInput }: DisplayForTextProps) {
-    const minutes = totalSeconds > 60 ? `${String(Number(totalSeconds - (timeSecInput%60))/60)} min `:'';
-    const seconds = `${String(timeSecInput % 60)||'00'} sec`;
+    const minutes = Number(totalSeconds) > 60 ? `${String(Number(Number(totalSeconds) - (Number(timeSecInput)%60))/60)} min `:'';
+    const seconds = `${String(Number(timeSecInput) % 60)||'00'} sec`;
 
-    return `${minutes}${seconds}`;
+    return ` ${minutes}${seconds}`;
   }
 
   type DisplayForTimeProps = {
@@ -33,5 +33,29 @@ function DisplayForText({ totalSeconds, timeSecInput }: DisplayForTextProps) {
   }
 
 
-export {convertToSeconds, DisplayForText, DisplayForTime};
+  type TimeOnTimerProps = {
+    secondsRemaining: number;
+  };
+
+
+type TimeOnTimerReturn = {
+  hoursOnTimer: number;
+  minutesOnTimer: number;
+  secondsOnTimer: number;
+};
+
+  function TimeOnTimer({secondsRemaining}: TimeOnTimerProps):TimeOnTimerReturn{
+    const secondsOnTimer = secondsRemaining % 60;
+    const minutesRemaining = (secondsRemaining - secondsOnTimer) / 60;
+    const minutesOnTimer = minutesRemaining % 60;
+    const hoursOnTimer = (minutesRemaining - minutesOnTimer) / 60;
+
+    return {
+      hoursOnTimer,
+      minutesOnTimer,
+      secondsOnTimer
+    };
+}
+
+export {convertToSeconds, DisplayForText, DisplayForTime, TimeOnTimer};
 

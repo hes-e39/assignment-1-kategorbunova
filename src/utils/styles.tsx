@@ -23,12 +23,16 @@ letter-spacing: .2rem;
 
 `;
 
-const TimerContainer = styled.div`
+interface TimerContainerProps {
+    isActive?: boolean;
+  }
+
+const TimerContainer = styled.div<TimerContainerProps>`
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-content: space-between;
-  background-color: ${(props) => (props.isActive ? 'green' : 'maroon' || props.isInitial ? 'grey' : 'black')}; 
+  background-color: ${(props) => (props.isActive ? 'green' : 'grey')};  
   border-radius: 10px;
   flex-basis: 100%;
   flex-grow: 1;
@@ -50,12 +54,17 @@ const Timer = styled.div`
   border-radius: 10px;
 `;
 
-const TimeDisplay = styled.div`
+const TimeDisplay = styled.div<TimerContainerProps>`
   border: 2px solid white;
   color: ${(props) => (props.isActive ? 'black' : 'grey')}; 
+  display: flex;
+    align-items: center;
+  justify-content: center;
+    gap: 0.5rem;
+
 `;
 
-const Button = styled.button`
+const Button = styled.button<TimerContainerProps>`
 color: white;
 margin: 0.25em;
 border-radius: 10px;

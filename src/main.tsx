@@ -1,7 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import {
-  Link,
   NavLink,
   Outlet,
   RouterProvider,
@@ -45,18 +44,18 @@ const linkStyle = {
 };
 
 
-const TimersPages = () => {
-  return (
-    <ul>
-        <li>
-          <Link to="/">Countdown</Link>
-        </li>
-        <li>
-          <Link to="/docs">Stopwatch</Link>
-        </li>
-      </ul>
-  )
-}
+// const TimersPages = () => {
+//   return (
+//     <ul>
+//         <li>
+//           <Link to="/">Countdown</Link>
+//         </li>
+//         <li>
+//           <Link to="/docs">Stopwatch</Link>
+//         </li>
+//       </ul>
+//   )
+// }
 
 const router = createHashRouter([
   {

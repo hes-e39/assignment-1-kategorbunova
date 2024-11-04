@@ -2,6 +2,7 @@ import {useState, useEffect, useRef} from 'react'
 import { Buttons, Button, Input, Inputs, TimerContainer, Timer, TimerTitle, TimeDisplay, SupportText } from '../../utils/styles';
 import { convertToSeconds, DisplayForText, DisplayForTime } from '../../utils/helpers';
 import { STATUS } from '../../utils/constants';
+import type { StatusType } from '../../utils/constants';
 
 
 const Countdown = () => {
@@ -9,7 +10,7 @@ const Countdown = () => {
     const [timeMinInput, setTimeMinInput] = useState('')
     const [timeSecInput, setTimeSecInput] = useState('')
 
-    const [status, setStatus] = useState(STATUS.INITIAL);
+    const [status, setStatus] = useState<StatusType>(STATUS.INITIAL);
     const [secondsRemaining, setSecondsRemaining] = useState(0)
 
 
@@ -23,14 +24,12 @@ const Countdown = () => {
   
     const startStopCountdown = () => {
 
-              if (isNaN(totalSeconds) || (timeMinInput === '' && timeSecInput === '') || totalSeconds <= 0) {
-                alert('Please enter a valid time.');
-                }
-
-                else if (totalSeconds > 3600) {
-                  alert("Friendly caution: excercise over an hour can lead to overtraining. Please enter a time under an hour.")
-                }
-
+      if (Number.isNaN(totalSeconds) || (timeMinInput === '' && timeSecInput === '') || totalSeconds <= 0) {
+        alert('Please enter a valid time.');
+        }
+      else if (totalSeconds > 3600) {
+        alert("Friendly caution: excercise over an hour can lead to overtraining. Please enter a time under an hour.")
+      }
               
               else {
                 if (status !== STATUS.STARTED) 
@@ -56,7 +55,10 @@ const Countdown = () => {
     const fastforwardCountdown = () => {
         setStatus(STATUS.FASTFORWARDED);
         setSecondsRemaining(0);
-        clearInterval(intervalRef.current); 
+          if (intervalRef.current !== null) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
       }
 
     const initialCountdown = () => {
@@ -64,17 +66,18 @@ const Countdown = () => {
       }  
 
 
-    const intervalRef = useRef(); 
+      const intervalRef = useRef<number | null>();
 
 
     useEffect(() => {
         if (status === STATUS.STARTED) {
-          const totalSeconds = convertToSeconds(timeMinInput, timeSecInput);
 
           setSecondsRemaining((prev) => {
             if (prev > 1) 
               return prev - 1;
-          });
+              return prev; //this is added to fix a TypeScript error to ensure we never return undefined
+          }
+          );
 
           intervalRef.current = setInterval(() => {
             setSecondsRemaining((prev) => { 
@@ -87,7 +90,12 @@ const Countdown = () => {
             });
           }, 1000);
         }
-        return () => clearInterval(intervalRef.current);
+        return () => {
+          if (intervalRef.current !== null) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+        } ;
         
       }, [status]);
 
@@ -95,7 +103,7 @@ const Countdown = () => {
 
     return (
         <div className="App"> 
-            <TimerContainer isActive={status === STATUS.STARTED} isInitial={status === STATUS.INITIAL}>
+            <TimerContainer isActive={status === STATUS.STARTED}>
             <TimerTitle>Countdown</TimerTitle> 
               <Timer>
               {status === STATUS.INITIAL  && (
@@ -133,23 +141,23 @@ const Countdown = () => {
               
               </Timer>
               
-              {status !== STATUS.INITIAL && (status !== STATUS.FASTFORWARDED) && (secondsRemaining !== 0 && status !== STATUS.INITIAL) &&
+              {status !== STATUS.INITIAL && (status !== STATUS.FASTFORWARDED) && (secondsRemaining !== 0) &&
               <SupportText>
-                  <>In progress: countdown for </> 
+                  In progress: countdown for
                   <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInput}/>
                 </SupportText>
               }
 
               {(status === STATUS.FASTFORWARDED || (secondsRemaining === 0 && status !== STATUS.INITIAL)) &&
               <SupportText>
-                <>Finished: countdown for </>
+                Finished: countdown for
                 <DisplayForText totalSeconds={totalSeconds} timeSecInput={timeSecInput}/>
               </SupportText>
               }
               
-              {status == STATUS.INITIAL &&
+              {status === STATUS.INITIAL &&
             <SupportText>
-            <>Please input time for a countdown above</>
+            Please input time for a countdown above
           </SupportText>}
 
           
