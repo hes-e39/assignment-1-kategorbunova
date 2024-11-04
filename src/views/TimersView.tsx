@@ -1,43 +1,27 @@
-import styled from "styled-components";
+import { TimerContainer, Timers } from '../utils/styles';
 
-import Stopwatch from "../components/timers/Stopwatch";
-import Countdown from "../components/timers/Countdown";
-import XY from "../components/timers/XY";
-import Tabata from "../components/timers/Tabata";
-
-const Timers = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
-
-const Timer = styled.div`
-  border: 1px solid gray;
-  padding: 20px;
-  margin: 10px;
-  font-size: 1.5rem;
-`;
-
-const TimerTitle = styled.div``;
+import Countdown from '../components/timers/Countdown';
+import Stopwatch from '../components/timers/Stopwatch';
+import Tabata from '../components/timers/Tabata';
+import XY from '../components/timers/XY';
 
 const TimersView = () => {
-  const timers = [
-    { title: "Stopwatch", C: <Stopwatch /> },
-    { title: "Countdown", C: <Countdown /> },
-    { title: "XY", C: <XY /> },
-    { title: "Tabata", C: <Tabata /> },
-  ];
+    const timers = [
+        { title: 'Stopwatch', C: <Stopwatch /> },
+        { title: 'Countdown', C: <Countdown /> },
+        { title: 'XY', C: <XY /> },
+        { title: 'Tabata', C: <Tabata /> },
+    ];
 
-  return (
-    <Timers>
-      {timers.map((timer) => (
-        <Timer key={`timer-${timer.title}`}>
-          <TimerTitle>{timer.title}</TimerTitle>
-          {timer.C}
-        </Timer>
-      ))}
-    </Timers>
-  );
+    return (
+        <Timers>
+            {timers.map(timer => (
+                <div key={`timer-${timer.title}`}>
+                    <TimerContainer> {timer.C} </TimerContainer>
+                </div>
+            ))}
+        </Timers>
+    );
 };
 
 export default TimersView;

@@ -2,7 +2,7 @@
   "name": "csci-e-39-assignment",
   "private": true,
   "version": "1.0.0",
-  "homepage": "https://hes-e39.github.io/assignment-1/",
+  "homepage": "https://hes-e39.github.io/assignment-1-kategorbunova/", 
   "type": "module",
   "scripts": {
     "dev": "vite",
