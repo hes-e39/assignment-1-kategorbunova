@@ -1,49 +1,48 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import {
-  NavLink,
-  Outlet,
-  RouterProvider,
-  createHashRouter,
-} from "react-router-dom";
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { NavLink, Outlet, RouterProvider, createHashRouter } from 'react-router-dom';
 
-import "./index.css";
-import TimersView from "./views/TimersView";
-import DocumentationView from "./views/DocumentationView";
+import './index.css';
+import DocumentationView from './views/DocumentationView';
+import TimersView from './views/TimersView';
 
 const PageIndex = () => {
-  return (
-    <div>
-      <h1 style={{ textAlign: 'center' }}>Workout Timers</h1>
-      <ul style={navListStyle}>
-        <li>
-          <NavLink to="/" style={({ isActive }) => linkStyle(isActive)} >Timers</NavLink>
-        </li>
-        <li>
-          <NavLink to="/docs"style={({ isActive }) => linkStyle(isActive)}> Documentation</NavLink>
-        </li>
-      </ul>
-      <Outlet />
-    </div>
-  );
+    return (
+        <div>
+            <h1 style={{ textAlign: 'center' }}>Workout Timers</h1>
+            <ul style={navListStyle}>
+                <li>
+                    <NavLink to="/" style={({ isActive }) => linkStyle(isActive)}>
+                        Timers
+                    </NavLink>
+                </li>
+                <li>
+                    <NavLink to="/docs" style={({ isActive }) => linkStyle(isActive)}>
+                        {' '}
+                        Documentation
+                    </NavLink>
+                </li>
+            </ul>
+            <Outlet />
+        </div>
+    );
 };
 
 const navListStyle = {
-  display: 'flex',
-  listStyle: 'none',
-  justifyContent: 'center',
-  padding: 0,
-  gap: '1rem',
-  marginTop: '1rem',
+    display: 'flex',
+    listStyle: 'none',
+    justifyContent: 'center',
+    padding: 0,
+    gap: '1rem',
+    marginTop: '1rem',
 };
 
-const linkStyle = (isActive) => ({
-  textDecoration: 'underline',
-  color: 'black',
-  fontSize: '1.1rem',
-  fontWeight: isActive ? 'bold' : 'normal',
+const linkStyle = (isActive: boolean) => ({
+    textDecoration: 'underline',
+    color: 'black',
+    fontSize: '1.1rem',
+    fontWeight: isActive ? 'bold' : 'normal',
 });
-
 
 // const TimersPages = () => {
 //   return (
@@ -59,25 +58,25 @@ const linkStyle = (isActive) => ({
 // }
 
 const router = createHashRouter([
-  {
-    path: "/",
-    element: <PageIndex />,
-    children: [
-      {
-        index: true,
-        element: <TimersView />,
-      },
-      {
-        path: "/docs",
-        element: <DocumentationView />,
-      },
-    ],
-  },
+    {
+        path: '/',
+        element: <PageIndex />,
+        children: [
+            {
+                index: true,
+                element: <TimersView />,
+            },
+            {
+                path: '/docs',
+                element: <DocumentationView />,
+            },
+        ],
+    },
 ]);
 
 // biome-ignore lint/style/noNonNullAssertion: root html element is there
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>
+createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+        <RouterProvider router={router} />
+    </StrictMode>,
 );
